@@ -247,7 +247,8 @@ namespace Kaltura.Types
 			}
 			if(node["isDefault"] != null)
 			{
-				this._IsDefault = (NullableBoolean)ParseEnum(typeof(NullableBoolean), node["isDefault"].Value<string>());
+				var isDefault = node["isDefault"].Value<bool>();
+				this._IsDefault = isDefault ? NullableBoolean.TRUE_VALUE : NullableBoolean.FALSE_VALUE;
 			}
 			if(node["label"] != null)
 			{

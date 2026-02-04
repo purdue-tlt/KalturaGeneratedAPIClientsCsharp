@@ -440,7 +440,25 @@ namespace Kaltura.Services
 			if (!isMapped("id"))
 				kparams.AddIfNotNull("id", Id);
 			if (!isMapped("captionAsset"))
-				kparams.AddIfNotNull("captionAsset", CaptionAsset);
+			{
+				var objectProperties = CaptionAsset.ToParams();
+
+				// remove read-only properties from update body
+				objectProperties.Remove("createdAt");
+				objectProperties.Remove("deletedAt");
+				objectProperties.Remove("description");
+				objectProperties.Remove("entityId");
+				objectProperties.Remove("id");
+				objectProperties.Remove("partnerId");
+				objectProperties.Remove("size");
+				objectProperties.Remove("sizeInBytes");
+				objectProperties.Remove("updatedAt");
+				objectProperties.Remove("version");
+				objectProperties.Remove("languageCode");
+
+				kparams.Add("captionAsset", objectProperties);
+			}
+
 			return kparams;
 		}
 
