@@ -103,7 +103,7 @@ namespace Kaltura.Request
             }
         }
 
-        public async Task<T> ExecuteAsync(Client client = null)
+        public async Task<T> ExecuteAsync(Client client = null, CancellationToken cancellationToken = default)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -118,17 +118,15 @@ namespace Kaltura.Request
             var files = getFiles();
             var requestBodyStr = GetRequestBodyJsonString();
 
-            var timeoutMs = files.Count == 0 ? client.Configuration.Timeout : Timeout.Infinite;
-            var cts = new CancellationTokenSource();
-            cts.CancelAfter(TimeSpan.FromMilliseconds(timeoutMs));
-
             try
             {
+                var httpClient = client.HttpClient;
+                httpClient.Timeout = files.Count == 0 ? TimeSpan.FromMilliseconds(client.Configuration.Timeout) : TimeSpan.MaxValue;
                 var content = GetPostBodyHttpContent(files, requestBodyStr);
                 SetRequestHeaders(content);
 
-                var response = await client.HttpClient.PostAsync(url, content, cts.Token);
-                var responseString = await response.Content.ReadAsStringAsync();
+                var response = await httpClient.PostAsync(url, content, cancellationToken);
+                var responseString = await response.Content.ReadAsStringAsync(cancellationToken);
                 var headersStr = GetResponseHeadersString(response);
 
                 var responseLogMsg = GetTrimmedResponseToLog(client, responseString);
@@ -139,7 +137,7 @@ namespace Kaltura.Request
                 response.EnsureSuccessStatusCode();
                 var responseObject = ParseResponseString<T>(responseString);
                 if (responseObject is ObjectBase )
-                {                    
+                {
                     var dict = response.Headers.ToDictionary(x => x.Key, x => x.Value);
                     (responseObject as ObjectBase).Headers = dict;
                 }
@@ -148,7 +146,7 @@ namespace Kaltura.Request
             }
             catch (Exception e)
             {
-                this.Log(string.Format("Error General Exception occored during request, ex:{0}", e));
+                this.Log(string.Format("Error General Exception occurred during request, ex:{0}", e));
                 throw;
             }
         }

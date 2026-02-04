@@ -64,27 +64,30 @@ namespace Kaltura
         {
             get { return requestConfiguration; }
         }
-        public HttpClient HttpClient { get; internal set; }
+
+		public HttpClient HttpClient
+		{
+			get
+			{
+				var httpClientHandler = new HttpClientHandler
+				{
+					AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+					Proxy = CreateProxy(),
+					MaxConnectionsPerServer = Configuration.MaxConnectionsPerServer
+				};
+
+				var httpClient = new HttpClient(httpClientHandler);
+				httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+				return httpClient;
+			}
+		}
 
 
 
-        public ClientBase(Configuration config)
+		public ClientBase(Configuration config)
         {
             Configuration = config;
-
-            var httpClientHandler = new HttpClientHandler
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                Proxy = CreateProxy(),
-#if NETSTANDARD2_0
-                MaxConnectionsPerServer = Configuration.MaxConnectionsPerServer,
-#endif
-            };
-
-            ServicePointManager.DefaultConnectionLimit = Configuration.MaxConnectionsPerServer;
-            HttpClient = new HttpClient(httpClientHandler);
-            HttpClient.Timeout = Timeout.InfiniteTimeSpan;
-            HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			ServicePointManager.DefaultConnectionLimit = Configuration.MaxConnectionsPerServer;
         }
 
 
