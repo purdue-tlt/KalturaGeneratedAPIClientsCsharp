@@ -121,7 +121,7 @@ namespace Kaltura.Request
             try
             {
                 var httpClient = client.HttpClient;
-                httpClient.Timeout = files.Count == 0 ? TimeSpan.FromMilliseconds(client.Configuration.Timeout) : TimeSpan.MaxValue;
+                httpClient.Timeout = files.Count == 0 ? TimeSpan.FromMilliseconds(client.Configuration.Timeout) : Timeout.InfiniteTimeSpan;
                 var content = GetPostBodyHttpContent(files, requestBodyStr);
                 SetRequestHeaders(content);
 
